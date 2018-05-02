@@ -13,5 +13,8 @@ class MainActivity : AppCompatActivity() {
         btn_damp_scroll_view.setOnClickListener {
             startActivity(Intent(this, DampScrollActivity::class.java))
         }
+        btn_over_scroll.setOnClickListener {
+            startActivity(Intent(this, OverScrollAppBarActivity::class.java))
+        }
     }
 }

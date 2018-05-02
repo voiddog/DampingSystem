@@ -27,6 +27,9 @@ import android.support.annotation.NonNull;
  */
 public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation> {
 
+    public static final int SPRING_FLAG_MIN = 1;
+    public static final int SPRING_FLAG_MAX = 2;
+
     public interface FloatRangeValueHolder {
         /**
          * get the min range value
@@ -49,6 +52,8 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
     private DragForce flingForce;
     // 阻尼逻辑
     private SpringForce springForce;
+    // 阻尼标记
+    private int springFlag = SPRING_FLAG_MIN | SPRING_FLAG_MAX;
 
     public SpringFlingAnimation(FloatValueHolder floatValueHolder) {
         super(floatValueHolder);
@@ -63,6 +68,14 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
     public SpringFlingAnimation setRangeValueHolder(@NonNull FloatRangeValueHolder valueHolder) {
         this.rangeValueHolder = valueHolder;
         return this;
+    }
+
+    public void setSpringFlag(int springFlag) {
+        this.springFlag = springFlag;
+    }
+
+    public int getSpringFlag() {
+        return springFlag;
     }
 
     @Override
@@ -114,6 +127,7 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
             min = rangeValueHolder.getMinRange();
             max = rangeValueHolder.getMaxRange();
         }
+        mValue = mProperty.getValue(mTarget);
         if (mValue > min && mValue < max) {
             // fling
             MassState state = flingForce.updateValueAndVelocity(mValue, mVelocity, deltaT);
@@ -137,9 +151,21 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
         } else {
             //  越界
             float finalPosition;
-            if (mValue > max) {
+            if (mValue >= max) {
+                if ((springFlag&SPRING_FLAG_MAX) == 0) {
+                    // 不能比 max 大
+                    mValue = max;
+                    mVelocity = 0;
+                    return true;
+                }
                 finalPosition = max;
             } else {
+                if ((springFlag&SPRING_FLAG_MIN) == 0) {
+                    // 不能比 min 小
+                    mValue = min;
+                    mVelocity = 0;
+                    return true;
+                }
                 finalPosition = min;
             }
             springForce.setFinalPosition(finalPosition);
@@ -170,6 +196,7 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
         return springForce.getAcceleration(value, velocity);
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     boolean isAtEquilibrium(float value, float velocity) {
         float min = 0, max = 0;
@@ -177,9 +204,10 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
             min = rangeValueHolder.getMinRange();
             max = rangeValueHolder.getMaxRange();
         }
-        @SuppressLint("RestrictedApi") boolean spring = springForce.isAtEquilibrium(value, velocity);
-        boolean fling = value < min || value > max || flingForce.isAtEquilibrium(value, velocity);
-        return fling && spring;
+        if (value > min && value < max) {
+            return flingForce.isAtEquilibrium(value, velocity);
+        }
+        return springForce.isAtEquilibrium(value, velocity);
     }
 
     @Override

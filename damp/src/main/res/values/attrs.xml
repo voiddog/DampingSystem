@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="OverScrollAppBarLayout">
+        <attr name="ovd_damp_appbar_close_height" format="dimension"/>
+        <attr name="ovd_damp_appbar_brother_id" format="reference"/>
+        <attr name="ovd_damp_appbar_expand_gravity" format="enum">
+            <enum name="bottom" value="0"/>
+            <enum name="top" value="1"/>
+            <enum name="center" value="3"/>
+            <enum name="full" value="4"/>
+        </attr>
+    </declare-styleable>
+</resources>
