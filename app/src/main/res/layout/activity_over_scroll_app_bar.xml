@@ -8,6 +8,7 @@
 
     <android.support.design.widget.OverScrollAppBarLayout
         app:ovd_damp_appbar_close_height="?android:attr/actionBarSize"
+        app:ovd_damp_appbar_brother_id="@+id/rec_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
