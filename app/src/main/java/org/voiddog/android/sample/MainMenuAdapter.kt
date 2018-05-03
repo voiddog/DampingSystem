@@ -47,7 +47,7 @@ class VH(parent: ViewGroup) : RecyclerView.ViewHolder(
     }
 }
 
-class MainMenuAadpter : RecyclerView.Adapter<VH>() {
+class MainMenuAdapter : RecyclerView.Adapter<VH>() {
 
     val menuDataList = ArrayList<MenuData>()
 
