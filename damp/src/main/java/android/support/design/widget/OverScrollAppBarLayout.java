@@ -171,6 +171,17 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         offsetChangeListenerList.remove(changeListener);
     }
 
+    @Nullable
+    public Behavior getBehavior() {
+        if (getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
+            CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) getLayoutParams();
+            if (lp.getBehavior() instanceof Behavior) {
+                return (Behavior) lp.getBehavior();
+            }
+        }
+        return null;
+    }
+
     //===============================Nested Scroll Dispatcher==================================
 
     @Override
@@ -382,10 +393,18 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             return offsetValueHolder.getValue();
         }
 
+        /**
+         * 播放动画，如果可以的话
+         */
+        public void playAnim() {
+            playAnim(bindParent, bindChild);
+        }
+
         //=============================== layout ==================================
 
         @Override
         public boolean onLayoutChild(CoordinatorLayout parent, OverScrollAppBarLayout child, int layoutDirection) {
+            bindViews(parent, child);
             parent.onLayoutChild(child, layoutDirection);
             child.notifyNewOffset((int)getOffset(), (int)getOffset()
                     , getMinOffset(parent, child), getMaxOffset(parent, child));
