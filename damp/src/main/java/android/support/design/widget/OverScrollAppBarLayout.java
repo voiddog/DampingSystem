@@ -673,7 +673,10 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                 if (nestedVelocityTracker != null) {
                     nestedVelocityTracker.computeCurrentVelocity(1000);
                     float velocity = nestedVelocityTracker.getYVelocity();
-                    setVelocity(coordinatorLayout.getContext(), velocity);
+                    velocity /= 4;
+                    if (velocity > 0) {
+                        setVelocity(coordinatorLayout.getContext(), velocity);
+                    }
                 }
                 if (target instanceof NestedScrollingChild2) {
                     ((NestedScrollingChild2) target).stopNestedScroll(ViewCompat.TYPE_NON_TOUCH);
