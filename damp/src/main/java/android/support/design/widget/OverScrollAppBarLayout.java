@@ -797,6 +797,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             offsetValueHolder.setValue(newOffset);
             applyOffsetToView(header);
             int newIntOffset = (int) getOffset();
+            header.notifyNewOffset(oldIntOffset, newIntOffset, minOffset, maxOffset);
 
             return newIntOffset - oldIntOffset;
         }
