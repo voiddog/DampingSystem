@@ -834,11 +834,14 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             animation.addUpdateListener(new DynamicAnimation.OnAnimationUpdateListener() {
                 @Override
                 public void onAnimationUpdate(DynamicAnimation animation, float value, float velocity) {
-                    if (bindChild == null || isDragged || nestedScrollInProgress) {
+                    if (bindChild == null || bindParent == null || isDragged || nestedScrollInProgress) {
                         animation.cancel();
                         animation.setStartVelocity(0);
                         return;
                     }
+                    int oldOffset = bindChild.getTop();
+                    bindChild.notifyNewOffset(oldOffset, (int) getOffset()
+                            , getMinOffset(bindParent, bindChild), getMaxOffset(bindParent, bindChild));
                     applyOffsetToView(bindChild);
                 }
             });
