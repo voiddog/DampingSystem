@@ -182,6 +182,24 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         return null;
     }
 
+    /**
+     * 判断是否在 nested touch 中，或者在 drag 中
+     * @return
+     */
+    public boolean isInNestedOrTouch() {
+        Behavior behavior = getBehavior();
+        if (behavior == null) {
+            return false;
+        }
+        if (behavior.isDragged || behavior.nestedScrollInProgress) {
+            return true;
+        }
+        if (hasNestedScrollingParent(ViewCompat.TYPE_TOUCH)) {
+            return true;
+        }
+        return false;
+    }
+
     //===============================Nested Scroll Dispatcher==================================
 
     @Override
@@ -394,10 +412,19 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         }
 
         /**
+         * 添加获取动画的接口
+         * @return
+         */
+        public SpringFlingAnimation getAnimation() {
+            return animation;
+        }
+
+        /**
          * 播放动画，如果可以的话
          */
+        @Deprecated
         public void playAnim() {
-            playAnim(bindParent, bindChild);
+            getAnimation().start();
         }
 
         //=============================== layout ==================================
