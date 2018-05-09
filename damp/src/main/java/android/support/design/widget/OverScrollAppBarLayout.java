@@ -413,6 +413,13 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             return getMaxOffset(bindParent, bindChild);
         }
 
+        public int getBindOverScrollOffset() {
+            if (bindParent == null || bindChild == null) {
+                return 0;
+            }
+            return getOverScrollOffset(bindParent, bindChild);
+        }
+
         //=============================== offset range ==================================
         public int getTotalScrollRange(CoordinatorLayout parent, OverScrollAppBarLayout child) {
             return getOverScrollOffset(parent, child) - getMinOffset(parent, child);
