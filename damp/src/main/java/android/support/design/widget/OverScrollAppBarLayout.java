@@ -443,6 +443,13 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             return 0;
         }
 
+        public void forceOffset(float offset) {
+            offsetValueHolder.setValue(offset);
+            if (bindChild != null && bindParent != null) {
+                updateOffset(bindParent, bindChild, offset, getMinOffset(bindParent, bindChild), getMaxOffset(bindParent, bindChild));
+            }
+        }
+
         public float getOffset() {
             return offsetValueHolder.getValue();
         }

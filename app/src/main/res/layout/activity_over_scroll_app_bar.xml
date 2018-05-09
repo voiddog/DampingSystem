@@ -7,6 +7,7 @@
     tools:context=".OverScrollAppBarActivity">
 
     <android.support.design.widget.OverScrollAppBarLayout
+        android:id="@+id/over_scroll_bar"
         app:ovd_damp_appbar_close_height="?android:attr/actionBarSize"
         app:ovd_damp_appbar_brother_id="@+id/rec_list"
         android:layout_width="match_parent"
@@ -28,5 +29,12 @@
         app:layout_behavior="@string/behavior_org_voiddog_damp_osabl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/btn_reset"
+        android:layout_gravity="right|bottom"
+        android:layout_margin="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
 </android.support.design.widget.CoordinatorLayout>

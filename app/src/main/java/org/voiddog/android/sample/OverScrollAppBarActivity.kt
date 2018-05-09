@@ -15,5 +15,8 @@ class OverScrollAppBarActivity : AppCompatActivity() {
         for (i in 1..100) {
             (rec_list.adapter as TestAdapter).contentList.add("测试 $i")
         }
+        btn_reset.setOnClickListener {
+            over_scroll_bar.behavior?.forceOffset(0f)
+        }
     }
 }
