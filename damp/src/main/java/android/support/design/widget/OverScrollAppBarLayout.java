@@ -384,6 +384,35 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             init();
         }
 
+        public CoordinatorLayout getBindParent() {
+            return bindParent;
+        }
+
+        public OverScrollAppBarLayout getBindChild() {
+            return bindChild;
+        }
+
+        public int getBindTotalScrollRange() {
+            if (bindParent == null || bindChild == null) {
+                return 0;
+            }
+            return getTotalScrollRange(bindParent, bindChild);
+        }
+
+        public int getBindMinOffset() {
+            if (bindParent == null || bindChild == null) {
+                return 0;
+            }
+            return getMinOffset(bindParent, bindChild);
+        }
+
+        public int getBindMaxOffset() {
+            if (bindParent == null || bindChild == null) {
+                return 0;
+            }
+            return getMaxOffset(bindParent, bindChild);
+        }
+
         //=============================== offset range ==================================
         public int getTotalScrollRange(CoordinatorLayout parent, OverScrollAppBarLayout child) {
             return getOverScrollOffset(parent, child) - getMinOffset(parent, child);
@@ -840,8 +869,8 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                         return;
                     }
                     int oldOffset = bindChild.getTop();
-                    bindChild.notifyNewOffset(oldOffset, (int) getOffset()
-                            , getMinOffset(bindParent, bindChild), getMaxOffset(bindParent, bindChild));
+                    bindChild.notifyNewOffset(oldOffset, (int) getOffset(), getMinOffset(bindParent, bindChild)
+                            , getMaxOffset(bindParent, bindChild));
                     applyOffsetToView(bindChild);
                 }
             });
