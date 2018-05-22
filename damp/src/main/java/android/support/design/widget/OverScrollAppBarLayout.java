@@ -362,6 +362,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         private boolean nestedScrollInProgress;
         private int activePointerId = INVALID_POINTER;
         private int lastMotionY;
+        private int lastMotionX;
         private int touchSlop = -1;
         private int minFlingVelocity = -1;
         private int maxFlingVelocity = -1;
@@ -507,6 +508,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
 
                     if (parent.isPointInChildBounds(child, x, y)) {
                         lastMotionY = y;
+                        lastMotionX = x;
                         activePointerId = ev.getPointerId(0);
                         ensureVelocityTracker();
                     }
@@ -516,6 +518,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                     if (activePointerId != INVALID_POINTER) {
                         activePointerId = ev.getPointerId(ev.getActionIndex());
                         lastMotionY = (int) (ev.getY(ev.getActionIndex()) + 0.5f);
+                        lastMotionX = (int) (ev.getX(ev.getActionIndex()) + 0.5f);
                     }
                     break;
                 }
@@ -530,8 +533,10 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                     }
 
                     final int y = (int) (ev.getY(pointerIndex) + 0.5f);
+                    final int x = (int) (ev.getY(pointerIndex) + 0.5f);
                     final int yDiff = Math.abs(y - lastMotionY);
-                    if (yDiff > touchSlop) {
+                    final int xDiff = Math.abs(x - lastMotionX);
+                    if (yDiff > touchSlop && yDiff > xDiff) {
                         isDragged = true;
                         lastMotionY = y;
                     }
