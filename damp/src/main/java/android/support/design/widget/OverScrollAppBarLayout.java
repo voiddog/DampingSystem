@@ -533,7 +533,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                     }
 
                     final int y = (int) (ev.getY(pointerIndex) + 0.5f);
-                    final int x = (int) (ev.getY(pointerIndex) + 0.5f);
+                    final int x = (int) (ev.getX(pointerIndex) + 0.5f);
                     final int yDiff = Math.abs(y - lastMotionY);
                     final int xDiff = Math.abs(x - lastMotionX);
                     if (yDiff > touchSlop && yDiff > xDiff) {
