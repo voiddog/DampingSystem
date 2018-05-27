@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Damping System</string>
+    <string name="title_activity_nested_damp_layout">NestedDampLayoutActivity</string>
 </resources>

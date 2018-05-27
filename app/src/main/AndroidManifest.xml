@@ -16,10 +16,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DampScrollActivity">
-        </activity>
-        <activity android:name=".OverScrollAppBarActivity">
-        </activity>
+        <activity android:name=".DampScrollActivity" />
+        <activity android:name=".OverScrollAppBarActivity" />
+        <activity
+            android:name=".NestedDampLayoutActivity"
+            android:label="@string/title_activity_nested_damp_layout"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

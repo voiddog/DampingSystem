@@ -445,9 +445,10 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         }
 
         public void forceOffset(float offset) {
-            offsetValueHolder.setValue(offset);
             if (bindChild != null && bindParent != null) {
                 updateOffset(bindParent, bindChild, offset, getMinOffset(bindParent, bindChild), getMaxOffset(bindParent, bindChild));
+            } else {
+                offsetValueHolder.setValue(offset);
             }
         }
 
@@ -583,6 +584,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                     final int y = (int) (ev.getY() + 0.5f);
 
                     if (parent.isPointInChildBounds(child, x, y)) {
+                        lastMotionX = x;
                         lastMotionY = y;
                         activePointerId = ev.getPointerId(0);
                         ensureVelocityTracker();
@@ -600,6 +602,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                     if (activePointerId != INVALID_POINTER) {
                         activePointerId = ev.getPointerId(ev.getActionIndex());
                         lastMotionY = (int) (ev.getY(ev.getActionIndex()) + 0.5f);
+                        lastMotionX = (int) (ev.getX(ev.getActionIndex()) + 0.5f);
                     }
                     break;
                 }
@@ -611,6 +614,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                     }
 
                     int y = (int) (ev.getY(activePointIndex) + 0.5f);
+                    int x = (int) (ev.getX(activePointIndex) + 0.5f);
                     int dy = y - lastMotionY;
 
                     if (!child.hasNestedScrollingParent(ViewCompat.TYPE_TOUCH)){
@@ -635,6 +639,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
 
                     if (isDragged) {
                         lastMotionY = y;
+                        lastMotionX = x;
 
                         if (dy > 0) {
                             // if bind brother can scroll, do not scroll down

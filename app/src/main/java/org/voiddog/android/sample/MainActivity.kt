@@ -23,5 +23,8 @@ class MainActivity : AppCompatActivity() {
         adapter.menuDataList.add(MenuData("跳转到 SampleOverScrollView", View.OnClickListener {
             startActivity(Intent(this, DampScrollActivity::class.java))
         }))
+        adapter.menuDataList.add(MenuData("跳转到 NestedDampLayout", View.OnClickListener {
+            startActivity(Intent(this, NestedDampLayoutActivity::class.java))
+        }))
     }
 }
