@@ -230,7 +230,7 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
     private void init() {
         springForce = new SpringForce()
                 .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
-                .setStiffness(SpringForce.STIFFNESS_MEDIUM);
+                .setStiffness(600f);
         flingForce = new DragForce();
         flingForce.setValueThreshold(getValueThreshold());
     }
