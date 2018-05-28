@@ -276,6 +276,7 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         super.onLayout(changed, left, top, right, bottom);
         // apply the views layout when layout change, because the frameLayout will
         // reset the layout of children
+        childOffset = 0;
         applyOffsetToView();
     }
 

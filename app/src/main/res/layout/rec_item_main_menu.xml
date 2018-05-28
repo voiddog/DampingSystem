@@ -11,5 +11,5 @@
         app:layout_constraintRight_toRightOf="parent"
         android:layout_width="0dp"
         android:layout_height="wrap_content" />
-s
+
 </android.support.constraint.ConstraintLayout>
