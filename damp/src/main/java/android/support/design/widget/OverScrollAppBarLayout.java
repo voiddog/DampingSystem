@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.voiddog.android.damp.R;
+import org.voiddog.android.damp.util.DampViewUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -194,10 +195,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         if (behavior.isDragged || behavior.nestedScrollInProgress) {
             return true;
         }
-        if (hasNestedScrollingParent(ViewCompat.TYPE_TOUCH)) {
-            return true;
-        }
-        return false;
+        return hasNestedScrollingParent(ViewCompat.TYPE_TOUCH);
     }
 
     //===============================Nested Scroll Dispatcher==================================
@@ -739,7 +737,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         public void onNestedPreScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull OverScrollAppBarLayout child
                 , @NonNull View target, int dx, int dy, @NonNull int[] consumed, int type) {
             if (dy > 0 && !isDragged) {
-                // scroll up
+                // scroll down
                 consumed[1] = scroll(coordinatorLayout, child, dy, getMinOffset(coordinatorLayout, child)
                         , getMaxOffset(coordinatorLayout, child));
 
@@ -757,7 +755,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull OverScrollAppBarLayout child
                 , @NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
             if (dyUnconsumed < 0 && !isDragged) {
-                // scroll down
+                // scroll up
                 int consumedScroll = scroll(coordinatorLayout, child, dyUnconsumed, getMinOffset(coordinatorLayout, child)
                         , getMaxOffset(coordinatorLayout, child));
                 lastNestedMotionY -= consumedScroll;
@@ -777,14 +775,10 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                         setVelocity(coordinatorLayout.getContext(), velocity);
                     }
                 }
-                if (target instanceof NestedScrollingChild2) {
-                    ((NestedScrollingChild2) target).stopNestedScroll(ViewCompat.TYPE_NON_TOUCH);
-                }
+                DampViewUtil.stopScroll(target);
                 playAnim(coordinatorLayout, child);
             } else if (!child.canScrollVertically(1) && dyUnconsumed > 0 && type == ViewCompat.TYPE_NON_TOUCH){
-                if (target instanceof NestedScrollingChild2) {
-                    ((NestedScrollingChild2) target).stopNestedScroll(ViewCompat.TYPE_NON_TOUCH);
-                }
+                DampViewUtil.stopScroll(target);
             }
         }
 
@@ -832,7 +826,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             float ratio = 1;
             if (newOffset > 0) {
                 // overScroll
-                ratio = 1 - newOffset * 1f / maxOffset;
+                ratio = 0.5f - newOffset * 0.5f / maxOffset;
             }
             dy *= ratio;
             newOffset = getOffset() - dy;

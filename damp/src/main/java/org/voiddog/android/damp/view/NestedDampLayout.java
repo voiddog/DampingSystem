@@ -1,10 +1,8 @@
-package org.voiddog.android.damp;
+package org.voiddog.android.damp.view;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.support.animation.DynamicAnimation;
 import android.support.animation.FloatValueHolder;
 import android.support.animation.SpringFlingAnimation;
@@ -13,7 +11,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.math.MathUtils;
 import android.support.v4.view.NestedScrollingChild;
 import android.support.v4.view.NestedScrollingChild2;
+import android.support.v4.view.NestedScrollingChildHelper;
 import android.support.v4.view.NestedScrollingParent2;
+import android.support.v4.view.NestedScrollingParentHelper;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ListViewCompat;
 import android.util.AttributeSet;
@@ -21,12 +21,12 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
+
+import org.voiddog.android.damp.util.DampViewUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +34,14 @@ import java.util.List;
 import static android.support.v4.widget.ViewDragHelper.INVALID_POINTER;
 
 public class NestedDampLayout extends FrameLayout implements NestedScrollingChild2, NestedScrollingParent2{
+    public static final String TAG = "NestedDampLayout";
+    // 启用头部回弹
+    public static final int DAMP_FLAG_START = 1;
+    // 启用底部回弹
+    public static final int DAMP_FLAG_END = 2;
+    // 启用两个方向的回弹，目前无效，有bug
+    @Deprecated
+    public static final int DAMP_FLAG_BOTH = 3;
 
     /**
      * get the offset change event
@@ -91,60 +99,183 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         init();
     }
 
-    // nested
+    /****************************************************************
+     *                   Nested Child Dispatcher
+     ****************************************************************/
+    @Override
+    public void setNestedScrollingEnabled(boolean enabled) {
+        childHelper.setNestedScrollingEnabled(enabled);
+    }
+
+    @Override
+    public boolean isNestedScrollingEnabled() {
+        return childHelper.isNestedScrollingEnabled();
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes) {
+        return childHelper.startNestedScroll(axes);
+    }
+
     @Override
     public boolean startNestedScroll(int axes, int type) {
-        return false;
+        return childHelper.startNestedScroll(axes, type);
     }
 
     @Override
     public void stopNestedScroll(int type) {
+        childHelper.stopNestedScroll(type);
+    }
 
+    @Override
+    public boolean hasNestedScrollingParent() {
+        return childHelper.hasNestedScrollingParent();
     }
 
     @Override
     public boolean hasNestedScrollingParent(int type) {
-        return false;
+        return childHelper.hasNestedScrollingParent(type);
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow) {
+        return childHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
     }
 
     @Override
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow, int type) {
-        return false;
+        return childHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow, type);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow) {
+        return childHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
     }
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow, int type) {
-        return false;
+        return childHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow, type);
+    }
+
+
+    /****************************************************************
+     *                     Nested Parent Receiver
+     ****************************************************************/
+
+    @Override
+    public int getNestedScrollAxes() {
+        return parentHelper.getNestedScrollAxes();
     }
 
     @Override
     public boolean onStartNestedScroll(@NonNull View child, @NonNull View target, int axes, int type) {
-        return false;
+        return (axes&ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
     }
 
     @Override
     public void onNestedScrollAccepted(@NonNull View child, @NonNull View target, int axes, int type) {
-
-    }
-
-    @Override
-    public void onStopNestedScroll(@NonNull View target, int type) {
-
-    }
-
-    @Override
-    public void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
-
+        targetChild = child;
+        targetView = target;
+        if (type == ViewCompat.TYPE_TOUCH) {
+            nestedScrollInProgress = true;
+        }
+        if (nestedVelocityTracker != null) {
+            nestedVelocityTracker.recycle();
+            nestedVelocityTracker = null;
+        }
+        recordNestedDown();
+        parentHelper.onNestedScrollAccepted(child, target, axes, type);
+        startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
     }
 
     @Override
     public void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed, int type) {
+        if (!isDragged) {
+            final float offset = getOffset();
+            final float minFlingOffset = getMinFlingOffset();
+            final float maxFlingOffset = getMaxFlingOffset();
+            if (dy > 0 && (dampFlag&DAMP_FLAG_START)==DAMP_FLAG_START) {
+                // scroll down
+                if (offset > minFlingOffset) {
+                    // head over scroll
+                    consumed[1] = scroll(dy);
+                } else if (type == ViewCompat.TYPE_NON_TOUCH && !target.canScrollVertically(1)) {
+                    // bottom over scroll but scroll down, the nested target should stop scroll
+                    DampViewUtil.stopScroll(target);
+                }
+            } else if (dy < 0 && (dampFlag&DAMP_FLAG_END)==DAMP_FLAG_END){
+                // scroll up
+                if (offset < maxFlingOffset) {
+                    // bottom over scroll
+                    consumed[1] = scroll(dy);
+                } else if (type == ViewCompat.TYPE_NON_TOUCH && !target.canScrollVertically(-1)) {
+                    // head over scroll but scroll up, the nested target should stop scroll
+                    DampViewUtil.stopScroll(target);
+                }
+            }
+            // record motionY event
+            recordNestedDy(dy);
+        }
+    }
 
+    @Override
+    public void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
+        if (!isDragged) {
+            // scroll up
+            int consumedScroll = 0;
+            final float offset = getOffset();
+            final float minFlingOffset = getMinFlingOffset();
+            final float maxFlingOffset = getMaxFlingOffset();
+            if (dyUnconsumed != 0) {
+                consumedScroll = scroll(dyUnconsumed);
+            }
+            recordNestedDy(dyConsumed + consumedScroll);
+
+            if (type == ViewCompat.TYPE_NON_TOUCH) {
+                int dy = dyUnconsumed + dyConsumed;
+                if (offset < minFlingOffset) {
+                    if (!animation.isRunning()) {
+                        applyNestedVelocity();
+                        playAnim();
+                    }
+                    if (dy > 0 && !target.canScrollVertically(1)) {
+                        DampViewUtil.stopScroll(target);
+                    }
+                } else if (offset > maxFlingOffset) {
+                    if (!animation.isRunning()) {
+                        applyNestedVelocity();
+                        playAnim();
+                    }
+                    if (dy < 0 && !target.canScrollVertically(-1)) {
+                        DampViewUtil.stopScroll(target);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onStopNestedScroll(@NonNull View target, int type) {
+        if (type == ViewCompat.TYPE_NON_TOUCH) {
+            applyNestedVelocity();
+            playAnim();
+            if (nestedVelocityTracker != null) {
+                nestedVelocityTracker.recycle();
+                nestedVelocityTracker = null;
+            }
+        } else if (type == ViewCompat.TYPE_TOUCH) {
+            nestedScrollInProgress = false;
+            playAnim();
+        }
+        parentHelper.onStopNestedScroll(target, type);
+        stopNestedScroll(type);
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
+        // apply the views layout when layout change, because the frameLayout will
+        // reset the layout of children
         applyOffsetToView();
     }
 
@@ -211,8 +342,14 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                 final int xDiff = Math.abs(x - lastMotionX);
                 if (yDiff > touchSlop && yDiff > xDiff) {
                     isDragged = true;
-                    if (targetChild != null && downPointInTargetChild) {
-                        if (dy > 0 && canChildScrollUp()) {
+                    if (targetView != null && downPointInTargetChild) {
+                        // if target child is nested scroll child
+                        // do not intercept the touch event
+                        // use the nested event instead
+                        if (targetView instanceof NestedScrollingChild &&
+                                (targetView.canScrollVertically(1) || targetView.canScrollVertically(-1))) {
+                            isDragged = false;
+                        } else if (dy > 0 && canChildScrollUp()) {
                             isDragged = false;
                         } else if (dy < 0 && canChildScrollDown()) {
                             isDragged = false;
@@ -344,11 +481,8 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                 if (velocityTracker != null && activePointerId != INVALID_POINTER) {
                     velocityTracker.addMovement(ev);
                     velocityTracker.computeCurrentVelocity(1000);
-                    // TODO target
                     float yvel = velocityTracker.getYVelocity(activePointerId);
-                    if (yvel < 0){
-                        setVelocity(getContext(), yvel);
-                    }
+                    setVelocity(getContext(), yvel);
                 }
                 playAnim();
                 break;
@@ -376,33 +510,75 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         super.onViewRemoved(child);
         if (child == targetChild) {
             targetChild = null;
+            targetView = null;
         }
     }
 
+    /**
+     * get the offset of children
+     * @return
+     */
     public float getOffset() {
         return offsetValueHolder.getValue();
     }
 
+    /**
+     * 可以移动的最小 offset
+     * @return
+     */
     public float getMinOffset() {
         return -getHeight();
     }
 
+    /**
+     * 可以移动的最大 offset
+     * @return
+     */
     public float getMaxOffset() {
         return getHeight();
     }
 
+    /**
+     * fling 事件的最小 offset ，小于此数值发生 spring（回弹） 事件
+     * @return
+     */
     public float getMinFlingOffset() {
         return 0;
     }
 
+    /**
+     * fling 事件的最大 offset，大于此数值发生 spring（回弹）事件
+     * @return
+     */
     public float getMaxFlingOffset() {
         return 0;
     }
 
+    /**
+     * 获取动画
+     * @return
+     */
     public SpringFlingAnimation getDampAnimation() {
         return animation;
     }
 
+    /**
+     * 设置回弹方式，头部 or 尾部，暂不支持 both
+     * @param flag {@link #DAMP_FLAG_START} 默认 start，即头部回弹
+     */
+    public void setDampFlag(int flag) {
+        this.dampFlag = flag;
+        if ((dampFlag&DAMP_FLAG_START) == DAMP_FLAG_START) {
+            animation.setSpringFlag(SpringFlingAnimation.SPRING_FLAG_MAX);
+        } else if ((dampFlag&DAMP_FLAG_END) == DAMP_FLAG_END) {
+            animation.setSpringFlag(SpringFlingAnimation.SPRING_FLAG_MIN);
+        }
+    }
+
+    /**
+     * 强制更新 offset
+     * @param newOffset
+     */
     public void forceOffset(float newOffset) {
         updateOffset(newOffset);
     }
@@ -419,6 +595,10 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         this.childScrollCallback = childScrollCallback;
     }
 
+    /**
+     * 用于判断是否有触控事件发生（自己的触控和 nested 的触控）
+     * @return
+     */
     public boolean isInNestedOrTouch() {
         if (isDragged || nestedScrollInProgress) {
             return true;
@@ -450,36 +630,42 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         return targetChild != null && targetChild.canScrollVertically(1);
     }
 
-    // private
-    private List<OffsetChangeListener> offsetChangeListeners = new ArrayList<>();
-    private SpringFlingAnimation animation;
-    private FloatValueHolder offsetValueHolder;
+    protected List<OffsetChangeListener> offsetChangeListeners = new ArrayList<>();
+    protected SpringFlingAnimation animation;
+    protected int dampFlag = DAMP_FLAG_START;
+    protected FloatValueHolder offsetValueHolder;
 
     // touch event
-    private boolean isDragged;
-    private boolean downPointInTargetChild;
-    private boolean nestedScrollInProgress;
-    private int activePointerId = INVALID_POINTER;
-    private int lastMotionY;
-    private int lastMotionX;
-    private int touchSlop = -1;
-    private int minFlingVelocity = -1;
-    private int maxFlingVelocity = -1;
-    private VelocityTracker velocityTracker;
+    protected boolean isDragged;
+    protected boolean downPointInTargetChild;
+    protected boolean nestedScrollInProgress;
+    protected int activePointerId = INVALID_POINTER;
+    protected int lastMotionY;
+    protected int lastMotionX;
+    protected int touchSlop = -1;
+    protected int minFlingVelocity = -1;
+    protected int maxFlingVelocity = -1;
+    protected VelocityTracker velocityTracker;
     // consumed
-    private int[] scrollConsumed = new int[2];
-    private int[] screenOffset = new int[2];
+    protected int[] scrollConsumed = new int[2];
+    protected int[] screenOffset = new int[2];
     // cache child view offset
-    private int childOffset;
+    protected int childOffset;
     // the targetScrollChild
     @Nullable
-    private View targetChild;
+    protected View targetChild;
+    protected View targetView;
     // child scroll callback
     @Nullable
-    private OnChildScrollCallback childScrollCallback;
+    protected OnChildScrollCallback childScrollCallback;
+    protected NestedScrollingChildHelper childHelper;
+    protected NestedScrollingParentHelper parentHelper;
+    // nested parent
+    protected VelocityTracker nestedVelocityTracker;
+    protected long nestedMotionDownTime;
+    protected int lastNestedMotionY;
 
-    private void init() {
-        setNestedScrollingEnabled(true);
+    protected void init() {
         offsetValueHolder = new FloatValueHolder();
         animation = new SpringFlingAnimation(offsetValueHolder);
         animation.setRangeValueHolder(new SpringFlingAnimation.FloatRangeValueHolder() {
@@ -506,37 +692,49 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                 notifyOffsetChange(oldOffset, getOffset());
             }
         });
-        animation.setSpringFlag(SpringFlingAnimation.SPRING_FLAG_MAX | SpringFlingAnimation.SPRING_FLAG_MIN);
+        setDampFlag(DAMP_FLAG_START);
+        childHelper = new NestedScrollingChildHelper(this);
+        parentHelper = new NestedScrollingParentHelper(this);
+        setNestedScrollingEnabled(true);
     }
 
-    private int scroll(int dy) {
+    protected int scroll(int dy) {
         int oldDy = dy;
         float minOffset = getMinOffset();
         float maxOffset = getMaxOffset();
         float maxFlingOffset = getMaxFlingOffset();
         float minFlingOffset = getMinFlingOffset();
-        float newOffset = getOffset() - dy;
+        float oldOffset = getOffset();
+        float newOffset = oldOffset - dy;
         float ratio = 1;
         if (newOffset > maxFlingOffset) {
             // overScroll
-            ratio = 1 - (newOffset - maxFlingOffset) / maxOffset;
+            ratio = 0.5f - 0.5f * (newOffset - maxFlingOffset) / maxOffset;
         } else if (newOffset < minFlingOffset) {
             // overScroll
-            ratio = 1 - (newOffset - minFlingOffset) / minOffset;
+            ratio = 0.5f - 0.5f * (newOffset - minFlingOffset) / minOffset;
         }
         dy *= ratio;
-        newOffset = getOffset() - dy;
+        newOffset = oldOffset - dy;
         float consumed = updateOffset(newOffset);
         float unConsumed = -dy - consumed;
         return oldDy + (int) (unConsumed * ratio);
     }
 
-    private float updateOffset(float newOffset) {
+    protected float updateOffset(float newOffset) {
         float minOffset = getMinOffset();
         float maxOffset  = getMaxOffset();
+        float minFlingOffset = getMinFlingOffset();
+        float maxFlingOffset = getMaxFlingOffset();
 
         // calculate new offset
         newOffset = MathUtils.clamp(newOffset, minOffset, maxOffset);
+        if ((dampFlag&DAMP_FLAG_END) == 0 && newOffset < minFlingOffset) {
+            newOffset = minFlingOffset;
+        } else if ((dampFlag&DAMP_FLAG_START) == 0
+                && newOffset > maxFlingOffset) {
+            newOffset = maxFlingOffset;
+        }
         float oldOffset = getOffset();
         offsetValueHolder.setValue(newOffset);
         applyOffsetToView();
@@ -544,7 +742,7 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         return newOffset - oldOffset;
     }
 
-    private void setVelocity(Context context, float v){
+    protected void setVelocity(Context context, float v){
         if (minFlingVelocity == -1){
             ViewConfiguration vc = ViewConfiguration.get(context);
             minFlingVelocity = vc.getScaledMinimumFlingVelocity();
@@ -555,13 +753,13 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         animation.setStartVelocity(v);
     }
 
-    private void ensureVelocityTracker() {
+    protected void ensureVelocityTracker() {
         if (velocityTracker == null) {
             velocityTracker = VelocityTracker.obtain();
         }
     }
 
-    private void applyOffsetToView() {
+    protected void applyOffsetToView() {
         float offset = getOffset();
         int moveOffset = (int) (offset - childOffset);
         if (moveOffset == 0) {
@@ -574,7 +772,7 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         }
     }
 
-    private void ensureTargetChild() {
+    protected void ensureTargetChild() {
         if (targetChild != null) {
             return;
         }
@@ -582,13 +780,13 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         for (int i = 0; i < count; ++i) {
             View child = getChildAt(i);
             if (child instanceof NestedScrollingChild) {
-                targetChild = child;
+                targetChild = targetView = child;
             } else if (child instanceof ScrollView) {
-                targetChild = child;
+                targetChild = targetView = child;
             } else if (child instanceof AbsListView) {
-                targetChild = child;
+                targetChild = targetView = child;
             } else if (child.canScrollVertically(1) || child.canScrollVertically(-1)) {
-                targetChild = child;
+                targetChild = targetView = child;
             }
             if (targetChild != null) {
                 break;
@@ -596,11 +794,11 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         }
     }
 
-    private void playAnim() {
+    protected void playAnim() {
         animation.start();
     }
 
-    private void notifyOffsetChange(float oldOffset, float newOffset) {
+    protected void notifyOffsetChange(float oldOffset, float newOffset) {
         for (OffsetChangeListener listener : offsetChangeListeners) {
             listener.onOffsetChange(this, oldOffset, newOffset);
         }
@@ -616,7 +814,7 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
      * @return true if the point is within the child view's bounds, false otherwise
      */
     private Rect tmp_isPointInChildBounds;
-    private boolean isPointInChildBounds(View child, int x, int y) {
+    protected boolean isPointInChildBounds(View child, int x, int y) {
         if (tmp_isPointInChildBounds == null) {
             tmp_isPointInChildBounds = new Rect();
         }
@@ -633,64 +831,35 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
      * @param out rect to set to the bounds of the descendant view
      */
     private void getDescendantRect(View descendant, Rect out) {
-        getDescendantRect(this, descendant, out);
+        DampViewUtil.getDescendantRect(this, descendant, out);
     }
 
-    /**
-     * This is a port of the common
-     * {@link ViewGroup#offsetDescendantRectToMyCoords(View, Rect)}
-     * from the framework, but adapted to take transformations into account. The result
-     * will be the bounding rect of the real transformed rect.
-     *
-     * @param descendant view defining the original coordinate system of rect
-     * @param rect (in/out) the rect to offset from descendant to this view's coordinate system
-     */
-    Matrix tmpMatrix_offsetDescendantRect;
-    RectF tmpRectF_offsetDescendantRect;
-    private void offsetDescendantRect(ViewGroup parent, View descendant, Rect rect) {
-        if (tmpMatrix_offsetDescendantRect == null) {
-            tmpMatrix_offsetDescendantRect = new Matrix();
-        } else {
-            tmpMatrix_offsetDescendantRect.reset();
-        }
-        Matrix m = tmpMatrix_offsetDescendantRect;
-
-        offsetDescendantMatrix(parent, descendant, m);
-
-        if (tmpRectF_offsetDescendantRect == null) {
-            tmpRectF_offsetDescendantRect = new RectF();
-        }
-        RectF rectF = tmpRectF_offsetDescendantRect;
-        rectF.set(rect);
-        m.mapRect(rectF);
-        rect.set((int) (rectF.left + 0.5f), (int) (rectF.top + 0.5f),
-                (int) (rectF.right + 0.5f), (int) (rectF.bottom + 0.5f));
+    protected void recordNestedDown() {
+        nestedVelocityTracker = VelocityTracker.obtain();
+        nestedMotionDownTime = System.currentTimeMillis();
+        lastNestedMotionY = 0;
+        MotionEvent nestedMotionEvent = MotionEvent.obtain(nestedMotionDownTime, nestedMotionDownTime
+                , MotionEvent.ACTION_DOWN, 0, lastMotionY, 0);
+        nestedVelocityTracker.addMovement(nestedMotionEvent);
+        nestedMotionEvent.recycle();
     }
 
-    /**
-     * Retrieve the transformed bounding rect of an arbitrary descendant view.
-     * This does not need to be a direct child.
-     *
-     * @param descendant descendant view to reference
-     * @param out rect to set to the bounds of the descendant view
-     */
-    private void getDescendantRect(ViewGroup parent, View descendant, Rect out) {
-        out.set(0, 0, descendant.getWidth(), descendant.getHeight());
-        offsetDescendantRect(parent, descendant, out);
+    protected void recordNestedDy(float dy) {
+        lastNestedMotionY -= dy;
+        MotionEvent nestedMotionEvent = MotionEvent.obtain(nestedMotionDownTime, System.currentTimeMillis(), MotionEvent.ACTION_MOVE
+                , 0, lastNestedMotionY, 0);
+        if (nestedVelocityTracker != null) {
+            nestedVelocityTracker.addMovement(nestedMotionEvent);
+        }
+        nestedMotionEvent.recycle();
     }
 
-    private void offsetDescendantMatrix(ViewParent target, View view, Matrix m) {
-        final ViewParent parent = view.getParent();
-        if (parent instanceof View && parent != target) {
-            final View vp = (View) parent;
-            offsetDescendantMatrix(target, vp, m);
-            m.preTranslate(-vp.getScrollX(), -vp.getScrollY());
-        }
-
-        m.preTranslate(view.getLeft(), view.getTop());
-
-        if (!view.getMatrix().isIdentity()) {
-            m.preConcat(view.getMatrix());
+    protected void applyNestedVelocity() {
+        if (nestedVelocityTracker != null) {
+            nestedVelocityTracker.computeCurrentVelocity(1000);
+            float velocity = nestedVelocityTracker.getYVelocity();
+            velocity /= 10;
+            setVelocity(getContext(), velocity);
         }
     }
 }

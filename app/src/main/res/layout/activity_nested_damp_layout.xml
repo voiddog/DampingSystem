@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".NestedDampLayoutActivity">
 
-    <org.voiddog.android.damp.NestedDampLayout
+    <org.voiddog.android.damp.view.NestedDampLayout
+        android:id="@+id/damp_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -37,6 +38,6 @@
             android:layout_width="match_parent"
             android:layout_height="100dp" />
 
-    </org.voiddog.android.damp.NestedDampLayout>
+    </org.voiddog.android.damp.view.NestedDampLayout>
 
 </android.support.constraint.ConstraintLayout>

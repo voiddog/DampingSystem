@@ -128,20 +128,27 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
             max = rangeValueHolder.getMaxRange();
         }
         mValue = mProperty.getValue(mTarget);
-        if (mValue > min && mValue < max) {
+        if (mValue >= min && mValue <= max) {
             // fling
             MassState state = flingForce.updateValueAndVelocity(mValue, mVelocity, deltaT);
             mValue = state.mValue;
             mVelocity = state.mVelocity;
 
             // When the animation hits the max/min value, consider animation done.
-            if (mValue < mMinValue) {
-                mValue = mMinValue;
-                return true;
-            }
-            if (mValue > mMaxValue) {
-                mValue = mMaxValue;
-                return true;
+            if (mValue > max) {
+                if ((springFlag&SPRING_FLAG_MAX) == 0) {
+                    // 不能比 max 大
+                    mValue = max;
+                    mVelocity = 0;
+                    return true;
+                }
+            } else if (mValue < min) {
+                if ((springFlag&SPRING_FLAG_MIN) == 0) {
+                    // 不能比 min 小
+                    mValue = min;
+                    mVelocity = 0;
+                    return true;
+                }
             }
 
             if (isAtEquilibrium(mValue, mVelocity)) {
@@ -151,27 +158,30 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
         } else {
             //  越界
             float finalPosition;
-            if (mValue >= max) {
-                if ((springFlag&SPRING_FLAG_MAX) == 0) {
-                    // 不能比 max 大
-                    mValue = max;
-                    mVelocity = 0;
-                    return true;
-                }
+            if (mValue > max) {
                 finalPosition = max;
             } else {
-                if ((springFlag&SPRING_FLAG_MIN) == 0) {
-                    // 不能比 min 小
-                    mValue = min;
-                    mVelocity = 0;
-                    return true;
-                }
                 finalPosition = min;
             }
             springForce.setFinalPosition(finalPosition);
             MassState massState = springForce.updateValues(mValue, mVelocity, deltaT);
             mValue = massState.mValue;
             mVelocity = massState.mVelocity;
+            if (mValue > max) {
+                if ((springFlag&SPRING_FLAG_MAX) == 0) {
+                    // 不能比 max 大
+                    mValue = max;
+                    mVelocity = 0;
+                    return true;
+                }
+            } else if (mValue < min) {
+                if ((springFlag&SPRING_FLAG_MIN) == 0) {
+                    // 不能比 min 小
+                    mValue = min;
+                    mVelocity = 0;
+                    return true;
+                }
+            }
             if (isAtEquilibrium(mValue, mVelocity)) {
                 mValue = springForce.getFinalPosition();
                 mVelocity = 0;
@@ -220,7 +230,7 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
     private void init() {
         springForce = new SpringForce()
                 .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
-                .setStiffness(SpringForce.STIFFNESS_LOW);
+                .setStiffness(SpringForce.STIFFNESS_MEDIUM);
         flingForce = new DragForce();
         flingForce.setValueThreshold(getValueThreshold());
     }
