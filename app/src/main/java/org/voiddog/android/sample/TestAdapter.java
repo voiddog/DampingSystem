@@ -60,9 +60,15 @@ public class TestAdapter extends RecyclerView.Adapter<TestAdapter.VH>{
             super(new TextView(context));
             textView = (TextView) itemView;
             textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            textView.setPadding(0, 20, 0, 20);
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
-            textView.setGravity(Gravity.CENTER);
+            int paddingVertical = dp2px(textView.getContext(), 20);
+            int paddingHorizontal = dp2px(textView.getContext(), 15);
+            textView.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        }
+
+        private int dp2px(Context context, float dp) {
+            final float scale = context.getResources().getDisplayMetrics().density;
+            return (int) (dp * scale + 0.5f);
         }
 
         public void bind(String content) {

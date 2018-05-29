@@ -12,7 +12,7 @@ class NestedDampLayoutActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nested_damp_layout)
         val adapter = TestAdapter()
-        for (i in 1..50) {
+        for (i in 1..5) {
             adapter.contentList.add("我是${i}号")
         }
         rec_list.layoutManager = LinearLayoutManager(this)

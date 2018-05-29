@@ -20,13 +20,19 @@
             android:layout_width="match_parent"
             android:layout_height="100dp" />
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rec_list"
+        <FrameLayout
             android:layout_marginTop="100dp"
             android:layout_marginBottom="100dp"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rec_list"
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </FrameLayout>
 
         <TextView
             android:textColor="@android:color/white"

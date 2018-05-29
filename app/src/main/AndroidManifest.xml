@@ -22,6 +22,7 @@
             android:name=".NestedDampLayoutActivity"
             android:label="@string/title_activity_nested_damp_layout"
             android:theme="@style/AppTheme" />
+        <activity android:name=".SwipeRefreshActivity"></activity>
     </application>
 
 </manifest>

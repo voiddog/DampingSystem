@@ -176,6 +176,7 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
     public void onNestedScrollAccepted(@NonNull View child, @NonNull View target, int axes, int type) {
         targetChild = child;
         targetView = target;
+        downPointInTargetChild = true;
         if (type == ViewCompat.TYPE_TOUCH) {
             nestedScrollInProgress = true;
         }
@@ -347,8 +348,7 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                         // if target child is nested scroll child
                         // do not intercept the touch event
                         // use the nested event instead
-                        if (targetView instanceof NestedScrollingChild &&
-                                (targetView.canScrollVertically(1) || targetView.canScrollVertically(-1))) {
+                        if (targetView instanceof NestedScrollingChild) {
                             isDragged = false;
                         } else if (dy > 0 && canChildScrollUp()) {
                             isDragged = false;
