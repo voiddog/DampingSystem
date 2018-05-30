@@ -200,18 +200,12 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                 if (offset > minFlingOffset) {
                     // head over scroll
                     consumed[1] = scroll(dy);
-                } else if (type == ViewCompat.TYPE_NON_TOUCH && !target.canScrollVertically(1)) {
-                    // bottom over scroll but scroll down, the nested target should stop scroll
-                    DampViewUtil.stopScroll(target);
                 }
             } else if (dy < 0 && (dampFlag&DAMP_FLAG_END)==DAMP_FLAG_END){
                 // scroll up
                 if (offset < maxFlingOffset) {
                     // bottom over scroll
                     consumed[1] = scroll(dy);
-                } else if (type == ViewCompat.TYPE_NON_TOUCH && !target.canScrollVertically(-1)) {
-                    // head over scroll but scroll up, the nested target should stop scroll
-                    DampViewUtil.stopScroll(target);
                 }
             }
             // record motionY event
@@ -239,7 +233,8 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                         applyNestedVelocity();
                         playAnim();
                     }
-                    if (dy > 0 && !target.canScrollVertically(1)) {
+                    // 越界，而且有未消耗滚动，表示无法继续往下滚了
+                    if (dy > 0 && dyUnconsumed > 0) {
                         DampViewUtil.stopScroll(target);
                     }
                 } else if (offset > maxFlingOffset) {
@@ -247,7 +242,8 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                         applyNestedVelocity();
                         playAnim();
                     }
-                    if (dy < 0 && !target.canScrollVertically(-1)) {
+                    // 越界，而且有未消耗滚动，表示无法继续往下滚了
+                    if (dy < 0 && dyUnconsumed < 0) {
                         DampViewUtil.stopScroll(target);
                     }
                 }

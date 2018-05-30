@@ -3,6 +3,8 @@ package org.voiddog.android.damp.util;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.support.v4.view.NestedScrollingChild;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,6 +44,9 @@ public class DampViewUtil {
     public static void stopScroll(View view) {
         if (view instanceof RecyclerView) {
             ((RecyclerView) view).stopScroll();
+        } else if (view instanceof NestedScrollingChild){
+            ViewCompat.stopNestedScroll(view);
+            ViewCompat.stopNestedScroll(view, ViewCompat.TYPE_NON_TOUCH);
         } else {
             MotionEvent ev = MotionEvent.obtain(System.currentTimeMillis(), System.currentTimeMillis()
                     , MotionEvent.ACTION_DOWN, 0, 0, 0);
