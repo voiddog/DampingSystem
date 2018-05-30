@@ -228,7 +228,7 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
     //===============================below is private ==================================
 
     private void init() {
-        springForce = new SpringForce()
+        springForce = new SpringForce(0)
                 .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
                 .setStiffness(600f);
         flingForce = new DragForce();
