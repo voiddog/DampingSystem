@@ -214,7 +214,7 @@ public class SpringFlingAnimation extends DynamicAnimation<SpringFlingAnimation>
             min = rangeValueHolder.getMinRange();
             max = rangeValueHolder.getMaxRange();
         }
-        if (value > min && value < max) {
+        if (value >= min && value <= max) {
             return flingForce.isAtEquilibrium(value, velocity);
         }
         return springForce.isAtEquilibrium(value, velocity);
