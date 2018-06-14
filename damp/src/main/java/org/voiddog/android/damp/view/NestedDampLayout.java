@@ -233,19 +233,17 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                         applyNestedVelocity();
                         playAnim();
                     }
-                    // 越界，而且有未消耗滚动，表示无法继续往下滚了
-                    if (dy > 0 && dyUnconsumed > 0) {
-                        DampViewUtil.stopScroll(target);
-                    }
                 } else if (offset > maxFlingOffset) {
                     if (!animation.isRunning()) {
                         applyNestedVelocity();
                         playAnim();
                     }
-                    // 越界，而且有未消耗滚动，表示无法继续往下滚了
-                    if (dy < 0 && dyUnconsumed < 0) {
-                        DampViewUtil.stopScroll(target);
-                    }
+                }
+                // 到底了，而且有未消耗滚动，表示无法继续往下滚了
+                if (offset <= minFlingOffset && dy > 0 && dyUnconsumed > 0) {
+                    DampViewUtil.stopScroll(target);
+                } else if (offset >= maxFlingOffset && dy < 0 && dyUnconsumed < 0) {
+                    DampViewUtil.stopScroll(target);
                 }
             }
         }

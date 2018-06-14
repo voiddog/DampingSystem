@@ -53,6 +53,7 @@ public class DampViewUtil {
             view.dispatchTouchEvent(ev);
             ev.setAction(MotionEvent.ACTION_CANCEL);
             view.dispatchTouchEvent(ev);
+            ev.recycle();
         }
     }
 
