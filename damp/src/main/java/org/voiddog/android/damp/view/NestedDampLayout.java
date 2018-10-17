@@ -53,7 +53,7 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
          * @param oldOffset
          * @param newOffset
          */
-        void onOffsetChange(NestedDampLayout layout, float oldOffset, float newOffset);
+        void onOffsetChange(NestedDampLayout layout, int oldOffset, int newOffset);
     }
 
     /**
@@ -208,8 +208,6 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                     consumed[1] = scroll(dy);
                 }
             }
-            // record motionY event
-            recordNestedDy(dy);
         }
     }
 
@@ -682,9 +680,10 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                     animation.setStartVelocity(0);
                     return;
                 }
-                float oldOffset = childOffset;
+                int oldOffset = childOffset;
                 applyOffsetToView();
-                notifyOffsetChange(oldOffset, getOffset());
+                int newOffset = childOffset;
+                notifyOffsetChange(oldOffset, newOffset);
             }
         });
         setDampFlag(DAMP_FLAG_START);
@@ -711,12 +710,12 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         }
         dy *= ratio;
         newOffset = oldOffset - dy;
-        float consumed = updateOffset(newOffset);
-        float unConsumed = -dy - consumed;
-        return oldDy + (int) (unConsumed * ratio);
+        int consumed = updateOffset(newOffset);
+        int unConsumed = -dy - consumed;
+        return oldDy + (int)(unConsumed / ratio);
     }
 
-    protected float updateOffset(float newOffset) {
+    protected int updateOffset(float newOffset) {
         float minOffset = getMinOffset();
         float maxOffset  = getMaxOffset();
         float minFlingOffset = getMinFlingOffset();
@@ -730,11 +729,12 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
                 && newOffset > maxFlingOffset) {
             newOffset = maxFlingOffset;
         }
-        float oldOffset = getOffset();
+        int oldUIOffset = childOffset;
         offsetValueHolder.setValue(newOffset);
         applyOffsetToView();
-        notifyOffsetChange(oldOffset, newOffset);
-        return newOffset - oldOffset;
+        int newUIOffset = childOffset;
+        notifyOffsetChange(oldUIOffset, newUIOffset);
+        return newUIOffset - oldUIOffset;
     }
 
     protected void setVelocity(Context context, float v){
@@ -793,7 +793,7 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         animation.start();
     }
 
-    protected void notifyOffsetChange(float oldOffset, float newOffset) {
+    protected void notifyOffsetChange(int oldOffset, int newOffset) {
         for (OffsetChangeListener listener : offsetChangeListeners) {
             listener.onOffsetChange(this, oldOffset, newOffset);
         }
@@ -834,12 +834,15 @@ public class NestedDampLayout extends FrameLayout implements NestedScrollingChil
         nestedMotionDownTime = System.currentTimeMillis();
         lastNestedMotionY = 0;
         MotionEvent nestedMotionEvent = MotionEvent.obtain(nestedMotionDownTime, nestedMotionDownTime
-                , MotionEvent.ACTION_DOWN, 0, lastMotionY, 0);
+                , MotionEvent.ACTION_DOWN, 0, lastNestedMotionY, 0);
         nestedVelocityTracker.addMovement(nestedMotionEvent);
         nestedMotionEvent.recycle();
     }
 
     protected void recordNestedDy(float dy) {
+        if (dy == 0) {
+            return;
+        }
         lastNestedMotionY -= dy;
         MotionEvent nestedMotionEvent = MotionEvent.obtain(nestedMotionDownTime, System.currentTimeMillis(), MotionEvent.ACTION_MOVE
                 , 0, lastNestedMotionY, 0);

@@ -454,6 +454,13 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             return offsetValueHolder.getValue();
         }
 
+        public int getUIOffset() {
+            if (bindChild != null) {
+                return bindChild.getTop();
+            }
+            return (int) offsetValueHolder.getValue();
+        }
+
         /**
          * 添加获取动画的接口
          * @return
@@ -476,7 +483,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         public boolean onLayoutChild(CoordinatorLayout parent, OverScrollAppBarLayout child, int layoutDirection) {
             bindViews(parent, child);
             parent.onLayoutChild(child, layoutDirection);
-            child.notifyNewOffset((int)getOffset(), (int)getOffset()
+            child.notifyNewOffset(getUIOffset(), getUIOffset()
                     , getMinOffset(parent, child), getMaxOffset(parent, child));
             applyOffsetToView(child);
             return true;
@@ -832,7 +839,7 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
             newOffset = getOffset() - dy;
             int consumed = updateOffset(coordinatorLayout, header, newOffset, minOffset, maxOffset);
             int unConsumed = -dy - consumed;
-            return oldDy + (int) (unConsumed * ratio);
+            return oldDy + (int) (unConsumed / ratio);
         }
 
         private int updateOffset(CoordinatorLayout parent, OverScrollAppBarLayout header, float newOffset
@@ -840,10 +847,10 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
 
             // calculate a new offset
             newOffset = MathUtils.clamp(newOffset, minOffset, maxOffset);
-            int oldIntOffset = (int) getOffset();
+            int oldIntOffset = getUIOffset();
             offsetValueHolder.setValue(newOffset);
             applyOffsetToView(header);
-            int newIntOffset = (int) getOffset();
+            int newIntOffset = getUIOffset();
             header.notifyNewOffset(oldIntOffset, newIntOffset, minOffset, maxOffset);
 
             return newIntOffset - oldIntOffset;
@@ -887,9 +894,10 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
                         return;
                     }
                     int oldOffset = bindChild.getTop();
-                    bindChild.notifyNewOffset(oldOffset, (int) getOffset(), getMinOffset(bindParent, bindChild)
-                            , getMaxOffset(bindParent, bindChild));
                     applyOffsetToView(bindChild);
+                    int newOffset = bindChild.getTop();
+                    bindChild.notifyNewOffset(oldOffset, newOffset, getMinOffset(bindParent, bindChild)
+                            , getMaxOffset(bindParent, bindChild));
                 }
             });
             animation.setSpringFlag(SpringFlingAnimation.SPRING_FLAG_MAX);
