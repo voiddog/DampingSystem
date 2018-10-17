@@ -483,9 +483,9 @@ public class OverScrollAppBarLayout extends FrameLayout implements NestedScrolli
         public boolean onLayoutChild(CoordinatorLayout parent, OverScrollAppBarLayout child, int layoutDirection) {
             bindViews(parent, child);
             parent.onLayoutChild(child, layoutDirection);
+            applyOffsetToView(child);
             child.notifyNewOffset(getUIOffset(), getUIOffset()
                     , getMinOffset(parent, child), getMaxOffset(parent, child));
-            applyOffsetToView(child);
             return true;
         }
 
