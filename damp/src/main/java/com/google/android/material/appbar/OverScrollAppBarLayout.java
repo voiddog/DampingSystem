@@ -1,4 +1,4 @@
-package android.support.design.widget;
+package com.google.android.material.appbar;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import com.google.android.material.appbar.HeaderScrollingViewBehavior;
 
 import org.voiddog.android.damp.R;
 import org.voiddog.android.damp.util.DampViewUtil;

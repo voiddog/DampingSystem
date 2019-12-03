@@ -1,5 +1,5 @@
 <resources>
     <string name="behavior_org_voiddog_damp_osabl">
-        android.support.design.widget.OverScrollAppBarLayout$ScrollingViewBehavior
+        com.google.android.material.appbar.OverScrollAppBarLayout$ScrollingViewBehavior
     </string>
 </resources>

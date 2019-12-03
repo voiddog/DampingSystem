@@ -2,7 +2,6 @@ package org.voiddog.android.sample
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_swipe_refresh.*
 
 class SwipeRefreshActivity : AppCompatActivity() {
