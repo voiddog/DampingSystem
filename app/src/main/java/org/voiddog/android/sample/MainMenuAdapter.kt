@@ -1,6 +1,6 @@
 package org.voiddog.android.sample
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,7 +29,7 @@ import android.widget.Button
 
 data class MenuData(val content:String, val listener:View.OnClickListener)
 
-class VH(parent: ViewGroup) : RecyclerView.ViewHolder(
+class VH(parent: ViewGroup) : androidx.recyclerview.widget.RecyclerView.ViewHolder(
         LayoutInflater.from(parent.context).inflate(R.layout.rec_item_main_menu, parent, false)) {
     val btnJump = itemView.findViewById<Button>(R.id.btn_jump)
 
@@ -47,7 +47,7 @@ class VH(parent: ViewGroup) : RecyclerView.ViewHolder(
     }
 }
 
-class MainMenuAdapter : RecyclerView.Adapter<VH>() {
+class MainMenuAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<VH>() {
 
     val menuDataList = ArrayList<MenuData>()
 

@@ -3,14 +3,13 @@ package org.voiddog.android.damp.util;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.support.v4.view.NestedScrollingChild;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.RecyclerView;
+import androidx.core.view.NestedScrollingChild;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.ScrollView;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓

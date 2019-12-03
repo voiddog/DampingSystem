@@ -1,6 +1,6 @@
 package org.voiddog.android.sample
 
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
 class DampScrollActivity : AppCompatActivity() {

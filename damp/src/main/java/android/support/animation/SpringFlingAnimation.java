@@ -1,8 +1,8 @@
-package android.support.animation;
+package androidx.dynamicanimation.animation;
 
 import android.annotation.SuppressLint;
-import android.support.annotation.FloatRange;
-import android.support.annotation.NonNull;
+import androidx.annotation.FloatRange;
+import androidx.annotation.NonNull;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓

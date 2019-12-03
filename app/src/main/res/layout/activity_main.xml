@@ -7,14 +7,14 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         app:title="DampingSample"
         app:titleTextColor="@android:color/white"
         android:background="@color/colorPrimary"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"/>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rec_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

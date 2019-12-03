@@ -1,8 +1,8 @@
 package org.voiddog.android.sample
 
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_swipe_refresh.*
 
 class SwipeRefreshActivity : AppCompatActivity() {
@@ -15,7 +15,7 @@ class SwipeRefreshActivity : AppCompatActivity() {
             adapter.contentList.add("测试内容${i}")
         }
         rec_list.adapter = adapter
-        rec_list.layoutManager = LinearLayoutManager(this)
+        rec_list.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         swipe_refresh.setOnRefreshListener {
             rec_list.postDelayed({
                 val adapter = rec_list.adapter as TestAdapter

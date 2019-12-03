@@ -2,8 +2,8 @@ package org.voiddog.android.sample
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         rec_list.adapter = adapter
-        rec_list.layoutManager = LinearLayoutManager(this)
+        rec_list.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         adapter.menuDataList.add(MenuData("跳转到 OverScrollAppBarLayout", View.OnClickListener {
             startActivity(Intent(this, OverScrollAppBarActivity::class.java))
         }))

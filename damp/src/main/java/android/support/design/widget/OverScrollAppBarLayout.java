@@ -3,15 +3,15 @@ package android.support.design.widget;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.animation.DynamicAnimation;
-import android.support.animation.FloatValueHolder;
-import android.support.animation.SpringFlingAnimation;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.math.MathUtils;
-import android.support.v4.view.NestedScrollingChild2;
-import android.support.v4.view.NestedScrollingChildHelper;
-import android.support.v4.view.ViewCompat;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.FloatValueHolder;
+import androidx.dynamicanimation.animation.SpringFlingAnimation;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.math.MathUtils;
+import androidx.core.view.NestedScrollingChild2;
+import androidx.core.view.NestedScrollingChildHelper;
+import androidx.core.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -20,13 +20,17 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
+import com.google.android.material.appbar.HeaderScrollingViewBehavior;
+
 import org.voiddog.android.damp.R;
 import org.voiddog.android.damp.util.DampViewUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.support.v4.widget.ViewDragHelper.INVALID_POINTER;
+import static androidx.customview.widget.ViewDragHelper.INVALID_POINTER;
 
 /**
  * ┏┛ ┻━━━━━┛ ┻┓

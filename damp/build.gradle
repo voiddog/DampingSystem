@@ -12,7 +12,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
 
@@ -28,13 +28,13 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    api "com.android.support:appcompat-v7:$support_version"
-    api "com.android.support:design:$support_version"
-    api "com.android.support:support-dynamic-animation:$support_version"
+    api 'androidx.appcompat:appcompat:1.0.0'
+    api 'com.google.android.material:material:1.0.0'
+    api 'androidx.dynamicanimation:dynamicanimation:1.0.0'
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 }
 
 // build a jar with source files

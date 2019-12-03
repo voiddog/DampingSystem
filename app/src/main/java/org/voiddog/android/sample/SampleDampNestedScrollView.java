@@ -2,11 +2,11 @@ package org.voiddog.android.sample;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.animation.DynamicAnimation;
-import android.support.animation.FloatValueHolder;
-import android.support.animation.SpringFlingAnimation;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.FloatValueHolder;
+import androidx.dynamicanimation.animation.SpringFlingAnimation;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
