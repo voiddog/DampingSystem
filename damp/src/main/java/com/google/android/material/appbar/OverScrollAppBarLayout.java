@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-
 import com.google.android.material.appbar.HeaderScrollingViewBehavior;
 
 import org.voiddog.android.damp.R;
